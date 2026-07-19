@@ -1,0 +1,44 @@
+/*
+ * Copyright (c) 2024, Kelly Helmut Lord
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+/ {
+	chosen {
+		zephyr,display = &ssd16xx_waveshare_epaper_gdey0213b74;
+	};
+
+	mipi_dbi_waveshare_epaper_gdey0213b74 {
+		compatible = "zephyr,mipi-dbi-spi";
+		spi-dev = <&epaper_spi>;
+		dc-gpios = <&epaper_header 0 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&epaper_header 1 GPIO_ACTIVE_LOW>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ssd16xx_waveshare_epaper_gdey0213b74: ssd16xxfb@0 {
+			compatible = "gooddisplay,gdey0213b74", "solomon,ssd1680";
+			mipi-max-frequency = <4000000>;
+			reg = <0>;
+			width = <250>;
+			height = <122>;
+			busy-gpios = <&epaper_header 2 GPIO_ACTIVE_HIGH>;
+            rotation = <90>;
+
+			tssv = <0x80>;
+
+			full {
+				border-waveform = <0x05>;
+			};
+
+			partial {
+				border-waveform = <0x3c>;
+			};
+		};
+	};
+};
+
+
+

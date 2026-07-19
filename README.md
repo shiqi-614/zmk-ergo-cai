@@ -9,3 +9,11 @@ Read through the [ZMK Module Creation](https://zmk.dev/docs/development/module-c
 ## More Info
 
 For more info on modules, you can read through  through the [Zephyr modules page](https://docs.zephyrproject.org/3.5.0/develop/modules.html) and [ZMK's page on using modules](https://zmk.dev/docs/features/modules). [Zephyr's west manifest page](https://docs.zephyrproject.org/3.5.0/develop/west/manifest.html#west-manifests) may also be of use.
+
+
+## Command
+
+west build -p -b nrf52dk/nrf52832 -- \
+  -DSHIELD="epaper_gdey0213b74" \
+  -DZMK_EXTRA_MODULES="/Users/jinsongc/Development/zmk-ergo-cai" \
+  -DZMK_CONFIG="/Users/jinsongc/Development/zmk-config/config"

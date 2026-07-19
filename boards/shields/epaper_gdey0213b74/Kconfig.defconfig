@@ -1,0 +1,6 @@
+if SHIELD_EPAPER_GDEY0213B74
+config EPAPER_GDEY0213B74
+    bool "Enable epaper_gdey0213b74"
+    default y
+endif 
+

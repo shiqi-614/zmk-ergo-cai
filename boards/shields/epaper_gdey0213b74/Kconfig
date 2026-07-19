@@ -1,0 +1,6 @@
+config SHIELD_EPAPER_GDEY0213B74
+    bool
+
+config EPAPER_GDEY0213B74
+    bool "Enable epaper_gdey0213b74"
+    # 这里可以定义依赖，比如依赖某个驱动或显示框架
