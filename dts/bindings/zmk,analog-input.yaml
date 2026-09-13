@@ -1,0 +1,54 @@
+# Copyright (c) 2022 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+description: |
+  Input driver for ADC io channel
+
+compatible: "zmk,analog-input"
+
+properties:
+  sampling-hz:
+    type: int
+    default: 100
+
+  power-gpios:
+    type: phandle-array
+    description: "GPIO pin used to power the analog joystick (turns off during Deep Sleep)"
+
+  idle-sampling-hz:
+    type: int
+    default: 10
+    description: "Sampling frequency in Hz when joystick is in idle state"
+
+  idle-timeout-ms:
+    type: int
+    default: 3000
+    description: "Inactivity duration in ms before dropping to idle-sampling-hz"
+
+child-binding:
+  description: Per-channel configuration settings
+  properties:
+    io-channels:
+      type: phandle-array
+      required: true
+    mv-min-max:
+      type: int
+      required: true
+    mv-deadzone:
+      type: int
+      default: 10
+    invert:
+      type: boolean
+    report-on-change-only:
+      type: boolean
+    scale-multiplier:
+      type: int
+      default: 1
+    scale-divisor:
+      type: int
+      default: 70
+    evt-type:
+      type: int
+      required: true
+    input-code:
+      type: int
+      required: true
