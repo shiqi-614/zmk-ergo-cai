@@ -10,11 +10,11 @@
 		zephyr,display = &ssd16xx_waveshare_epaper_gdey0213b74;
 	};
 
-	mipi_dbi_waveshare_epaper_gdey0213b74 {
+	mipi_dbi_epaper: mipi_dbi_waveshare_epaper_gdey0213b74 {
 		compatible = "zephyr,mipi-dbi-spi";
 		spi-dev = <&epaper_spi>;
-		dc-gpios = <&epaper_header 0 GPIO_ACTIVE_HIGH>;
-		reset-gpios = <&epaper_header 1 GPIO_ACTIVE_LOW>;
+		dc-gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
@@ -24,7 +24,7 @@
 			reg = <0>;
 			width = <250>;
 			height = <122>;
-			busy-gpios = <&epaper_header 2 GPIO_ACTIVE_HIGH>;
+			busy-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
             rotation = <90>;
 
 			tssv = <0x80>;
@@ -42,3 +42,24 @@
 
 
 
+epaper_spi: &spi2 {
+    status = "okay";
+    cs-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+};
+
+&pinctrl {
+    spi2_default: spi2_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 9)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 10)>;
+        };
+    };
+
+    spi2_sleep: spi2_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 9)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 10)>;
+            low-power-enable;
+        };
+    };
+};

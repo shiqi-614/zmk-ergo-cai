@@ -1,26 +1,54 @@
-#include "layer.h"
-#include <fonts.h>
-#include <zephyr/kernel.h>
+#include "screen.h"
+#include "info_panel.h"
 
-void draw_layer_status(lv_obj_t *canvas, const struct status_state *state) {
-    lv_draw_label_dsc_t label_dsc;
-#if IS_ENABLED(CONFIG_NICE_EPAPER_ON)
-    init_label_dsc(&label_dsc, LVGL_FOREGROUND, &pixel_operator_mono_16, LV_TEXT_ALIGN_CENTER);
-#else
-    init_label_dsc(&label_dsc, LVGL_FOREGROUND, &pixel_operator_mono_16, LV_TEXT_ALIGN_LEFT);
-#endif // CONFIG_NICE_EPAPER_ON
+#include <zmk/display.h>
+#include <zmk/event_manager.h>
+#include <zmk/events/layer_state_changed.h>
+#include <zmk/keymap.h>
 
-    char text[10] = {};
-
-    if (state->layer_label == NULL) {
-        sprintf(text, "Layer %i", state->layer_index);
-    } else {
-        strncpy(text, state->layer_label, 9);
-        to_uppercase(text);
+/* 1. Getter：直接返回 ZMK 原生事件结构体 */
+static struct zmk_layer_state_changed layer_get_state(const zmk_event_t *eh) {
+    const struct zmk_layer_state_changed *ev = as_zmk_layer_state_changed(eh);
+    if (ev) {
+        return *ev;
     }
 
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RESPONSIVE_BONGO_CAT)
-    lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
-#endif
-    lv_canvas_draw_text(canvas, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y, 68, &label_dsc, text);
+    /* 初始状态或空事件时，主动获取当前最高激活图层 */
+    return (struct zmk_layer_state_changed){
+        .layer = zmk_keymap_highest_layer_active(),
+        .state = true,
+    };
+}
+
+/* 2. Callback：参数类型严格匹配为 struct zmk_layer_state_changed */
+static void layer_update_cb(struct zmk_layer_state_changed ev) {
+    struct zmk_widget_screen *screen;
+
+    /* 获取当前最高激活图层 */
+    uint8_t current_layer = zmk_keymap_highest_layer_active();
+
+    /* 遍历屏幕链表进行状态更新 */
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, screen, node) {
+
+        /* 状态脏检查 (Diff Check) */
+        if (screen->state.layer_index == current_layer) {
+            continue;
+        }
+        screen->state.layer_index = current_layer;
+
+        /* 格式化并更新 Label (局部刷新墨水屏) */
+        char buf[32];
+        snprintf(buf, sizeof(buf), "Layer: %u", current_layer);
+        
+        lv_label_set_text(screen->info_panel.labels[INFO_ITEM_LAYER], buf);
+    }
+}
+
+/* 3. 注册 Listener 与事件订阅 */
+ZMK_DISPLAY_WIDGET_LISTENER(widget_info_panel_layer, struct zmk_layer_state_changed,
+                            layer_update_cb, layer_get_state);
+ZMK_SUBSCRIPTION(widget_info_panel_layer, zmk_layer_state_changed);
+
+void zmk_widget_info_panel_layer_init(void) {
+    widget_info_panel_layer_init();
 }

@@ -1,0 +1,10 @@
+if SHIELD_JOYSTICK
+config JOYSTICK
+    bool "Enable joystick"
+    default y
+
+config ANALOG_INPUT
+    default y
+
+endif 
+

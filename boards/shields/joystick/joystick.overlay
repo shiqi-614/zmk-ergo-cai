@@ -1,0 +1,97 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <input/processors.dtsi>
+#include <dt-bindings/gpio/nordic-nrf-gpio.h>
+
+
+/ {
+    zephyr,user {
+        io-channels = <&adc 0>, <&adc 1>; 
+    };
+
+    /* 2. 定义模拟输入节点 (X 轴与 Y 轴) */
+    joystick: analog_input {
+        compatible = "zmk,analog-input";
+        sampling-hz = <50>;
+
+        idle-sampling-hz = <5>;      /* 3秒无操作后降频到 10Hz */
+        idle-timeout-ms = <1000>;    /* 3000ms 判定为静止 Idle */
+        /* power-gpios = <&gpio0 8 (GPIO_ACTIVE_HIGH | NRF_GPIO_DRIVE_H0H1)>; */
+
+        /* X 轴子节点 */
+        joystick_x {
+            io-channels = <&adc 0>; 
+            mv-min-max = <1700>;     /* 注意：属性名是短横线 mv-min-max */
+            mv-deadzone = <100>;
+            evt-type = <2>;          /* INPUT_EV_REL (相对轴事件) */
+            input-code = <0>;        /* INPUT_REL_X */
+            scale-multiplier = <1>;
+            scale-divisor = <70>;
+            /* invert;                  [> 方向反转标志 <] */
+        };
+
+        /* Y 轴子节点 */
+        joystick_y {
+            io-channels = <&adc 1>; 
+            mv-min-max = <1700>;
+            mv-deadzone = <100>;
+            evt-type = <2>;          /* INPUT_EV_REL */
+            input-code = <1>;        /* INPUT_REL_Y */
+            scale-multiplier = <1>;
+            scale-divisor = <70>;
+        };
+    };
+
+
+    joystick_listener {
+        compatible = "zmk,input-listener";
+        device = <&joystick>;
+
+        /* input-processors = <&zip_xy_scaler 1 1>; */
+
+        scroller {
+            layers = <1>;
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 32>;
+        };
+    };
+
+};
+
+/* 1. 配置 ADC 设备 (按需开启) */
+&adc {
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    adc_joystick_x: channel@0 {
+        reg = <0>;
+        zephyr,gain = "ADC_GAIN_1_6";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,input-positive = <NRF_SAADC_AIN1>; /* P0.03 */
+        zephyr,resolution = <12>;
+    };
+
+    adc_joystick_y: channel@1 {
+        reg = <1>;
+        zephyr,gain = "ADC_GAIN_1_6";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,input-positive = <NRF_SAADC_AIN2>; /* P0.04 */
+        zephyr,resolution = <12>;
+    };
+};
+
+/*
+https://docs.nordicsemi.com/r/bundle/ps_nrf52840/page/pin.html
+
+AIN0	A12	P0.02
+AIN1	B13	P0.03
+AIN2	J1	P0.04
+AIN3	K2	P0.05
+AIN4	B11	P0.28
+AIN5	A10	P0.29
+AIN6	B9	P0.30
+AIN7	A8	P0.31
+
+*/

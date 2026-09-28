@@ -9,19 +9,21 @@
 #include <zephyr/kernel.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/input/input.h>
-#include <zmk/keymap.h>
+#include <zephyr/input/input.h>
 #include <stdlib.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/dt-bindings/gpio/nordic-nrf-gpio.h>
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(ANALOG_INPUT, CONFIG_ANALOG_INPUT_LOG_LEVEL);
 
-#include <zmk/drivers/analog_input.h>
+#include "analog_input.h"
 
 /* 硬编码供电开启后的硬件稳定延迟 (毫秒) */
-#define POWER_ON_DELAY_MS 2
+#define POWER_ON_DELAY_MS 20
 /* 开机自动校准参数 */
 #define CALIBRATION_SAMPLES 32      /* 校准采样次数 */
 #define CALIBRATION_INTERVAL_MS 10 /* 采样间隔毫秒 (32 * 10ms = 320ms 校准时长) */
@@ -46,7 +48,8 @@ static int analog_input_report_data(const struct device *dev) {
 
     /* 1. 动态供电：采样前拉高 GPIO，硬编码延迟等待电平稳定 */
     if (config->power_gpio.port != NULL) {
-        gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_ACTIVE);
+        /* gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_ACTIVE); */
+        gpio_pin_set_dt(&config->power_gpio, 1); // 1 代表 Active (高电平)
 #if POWER_ON_DELAY_MS > 0
         k_msleep(POWER_ON_DELAY_MS);
 #endif
@@ -97,16 +100,21 @@ static int analog_input_report_data(const struct device *dev) {
         raw = ((uint16_t *)data->as_buff)[i];
 #endif
         int32_t mv = raw;
-        adc_raw_to_millivolts(
-            adc_ref_internal(adc),
-            ch_cfg.adc_channel.channel_cfg.gain,
-            as->resolution,
-            &mv
-        );
+        adc_raw_to_millivolts_dt(&ch_cfg.adc_channel, &mv);
 
         int32_t mid = (data->calibrated_mv_mid != NULL) ? data->calibrated_mv_mid[i] : ch_cfg.mv_min_max;
         int16_t v = mv - mid;
         int16_t dz = ch_cfg.mv_deadzone;
+
+#if IS_ENABLED(CONFIG_ANALOG_INPUT_LOG_DBG_REPORT)
+        LOG_INF("AIN%u raw: %d, mv: %d, mid: %d, v: %d, dz: %d",
+                i,
+                raw,
+                mv,
+                mid,
+                v,
+                dz);
+#endif
 
         if (dz) {
             if (v > 0) {
@@ -203,14 +211,14 @@ static int analog_input_report_data(const struct device *dev) {
         data->last_activity_time = current_time;
         if (data->is_idle) {
             data->is_idle = false;
-            LOG_DBG("Joystick active! Switch to high sampling rate: %u Hz", config->sampling_hz);
+            LOG_INF("Joystick active! Switch to high sampling rate: %u Hz", config->sampling_hz);
             set_sampling_timer_hz(data, config->sampling_hz);
         }
     } else {
         if (!data->is_idle && config->idle_sampling_hz > 0 && config->idle_timeout_ms > 0) {
             if ((current_time - data->last_activity_time) >= config->idle_timeout_ms) {
                 data->is_idle = true;
-                LOG_DBG("Joystick idle timeout. Switch to low sampling rate: %u Hz", config->idle_sampling_hz);
+                LOG_INF("Joystick idle timeout. Switch to low sampling rate: %u Hz", config->idle_sampling_hz);
                 set_sampling_timer_hz(data, config->idle_sampling_hz);
             }
         }
@@ -219,7 +227,8 @@ static int analog_input_report_data(const struct device *dev) {
 cleanup_power:
     /* 采样结束：断开分压电路供电 */
     if (config->power_gpio.port != NULL) {
-        gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_INACTIVE);
+        /* gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_INACTIVE); */
+        gpio_pin_set_dt(&config->power_gpio, 0); // 0 代表 Inactive (低电平)
     }
     return 0;
 }
@@ -235,7 +244,8 @@ static void perform_calibration(const struct device *dev) {
     if (!sum_mv) return;
 
     if (config->power_gpio.port != NULL) {
-        gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_ACTIVE);
+        /* gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_ACTIVE); */
+        gpio_pin_set_dt(&config->power_gpio, 1);
         k_msleep(POWER_ON_DELAY_MS);
     }
 
@@ -267,7 +277,8 @@ static void perform_calibration(const struct device *dev) {
     }
 
     if (config->power_gpio.port != NULL) {
-        gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_INACTIVE);
+        /* gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_INACTIVE); */
+        gpio_pin_set_dt(&config->power_gpio, 0);
     }
 
     for (uint8_t i = 0; i < config->io_channels_len; i++) {
@@ -353,10 +364,18 @@ static void analog_input_async_init(struct k_work *work) {
     uint32_t ch_mask = 0;
 
     if (config->power_gpio.port != NULL) {
+        LOG_INF("Power GPIO Configured: port=%s, pin=%u, flags=0x%x",
+                config->power_gpio.port->name,
+                config->power_gpio.pin,
+                config->power_gpio.dt_flags);
         if (!gpio_is_ready_dt(&config->power_gpio)) {
             LOG_ERR("Power GPIO device is not ready");
         } else {
-            gpio_pin_configure_dt(&config->power_gpio, GPIO_OUTPUT_INACTIVE);
+            int ret = gpio_pin_configure_dt(&config->power_gpio,
+                                GPIO_OUTPUT_INACTIVE | NRF_GPIO_DRIVE_H0H1);
+            if (ret < 0) {
+                LOG_ERR("Failed to configure power GPIO: %d", ret);
+            }
         }
     }
 
