@@ -45,13 +45,13 @@ int zmk_widget_info_panel_init(struct zmk_widget_info_panel *widget, lv_obj_t *p
         [INFO_ITEM_PROFILE] = "Profile: ---",
         [INFO_ITEM_SPLIT]   = "Split: ---",
         [INFO_ITEM_BATTERY] = "Battery: ---",
-        [INFO_ITEM_LAYER]   = "Layer: ---",
+        [INFO_ITEM_LAYER]   = "Layer: 0" 
     };
 #else
     static const char *init_texts[INFO_ITEM_COUNT] = {
         [INFO_ITEM_PROFILE] = "Profile: ---",
         [INFO_ITEM_BATTERY] = "Battery: ---",
-        [INFO_ITEM_LAYER]   = "Layer: ---",
+        [INFO_ITEM_LAYER]   = "Layer: 0"
     };
 
 #endif
@@ -61,6 +61,7 @@ int zmk_widget_info_panel_init(struct zmk_widget_info_panel *widget, lv_obj_t *p
 
         lv_label_set_text(widget->labels[i], init_texts[i]);
         lv_obj_set_style_text_font(widget->labels[i], &lv_font_montserrat_16, 0);
+        lv_obj_set_style_text_color(widget->labels[i], lv_color_black(), 0);
         lv_obj_set_width(widget->labels[i], LV_PCT(100));
     }
 

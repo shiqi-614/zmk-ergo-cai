@@ -9,30 +9,23 @@
 #include <zmk/events/endpoint_changed.h>
 #include <zmk/ble.h>
 #include <zmk/endpoints.h>
-#include <zmk/events/endpoint_changed.h>
+
+#include <zephyr/logging/log.h>
+LOG_MODULE_DECLARE(epaper_screen, CONFIG_ZMK_LOG_LEVEL);
 
 extern int zmk_ble_active_profile_index(void);
 
-/* 1. Getter：统一返回原生事件结构体 struct zmk_endpoint_changed */
-static struct zmk_endpoint_changed profile_get_state(const zmk_event_t *eh) {
-    const struct zmk_endpoint_changed *ev = as_zmk_endpoint_changed(eh);
-    if (ev) {
-        return *ev;
-    }
-
-    return (struct zmk_endpoint_changed){0};
-}
-
-/* 2. Callback：参数严格匹配为 struct zmk_endpoint_changed */
-static void profile_update_cb(struct zmk_endpoint_changed ev) {
+/* 统一的状态更新与刷新逻辑 */
+static void update_profile_ui(void) {
     struct zmk_widget_screen *screen;
 
     /* 从 ZMK API 实时获取最新的 Profile 序号和连接状态 */
     uint8_t active_profile = zmk_ble_active_profile_index();
     bool connected = zmk_ble_active_profile_is_connected();
+    LOG_INF("is connected %d, profile %d", connected, active_profile);
 
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, screen, node) {
-        /* 1. 脏检查 (Diff Check)：状态无变化时跳过 */
+        /* 1. 严格的脏检查：只要连接状态或 Profile 序号有一个变了，就不跳过 */
         if (screen->state.is_bluetooth_connected == connected &&
             screen->state.profile_index == active_profile) { 
             continue;
@@ -47,7 +40,7 @@ static void profile_update_cb(struct zmk_endpoint_changed ev) {
         if (connected) {
             snprintf(buf, sizeof(buf), "Profile: %u", active_profile);
         } else {
-            snprintf(buf, sizeof(buf), "Profile: %u Disconn", active_profile);
+            snprintf(buf, sizeof(buf), "Profile: ---");
         }
 
         /* 4. 更新 UI Label 并刷新状态 */
@@ -57,17 +50,41 @@ static void profile_update_cb(struct zmk_endpoint_changed ev) {
     }
 }
 
-/* 3. 注册 ZMK 监听器与订阅事件 */
+/* ==================== 1. Profile 切换事件监听 ==================== */
+static struct zmk_ble_active_profile_changed profile_get_state(const zmk_event_t *eh) {
+    const struct zmk_ble_active_profile_changed *ev = as_zmk_ble_active_profile_changed(eh);
+    if (ev) {
+        return *ev;
+    }
+    return (struct zmk_ble_active_profile_changed){0};
+}
 
-/* 监听 1: 当前蓝牙通道切换 (Active Profile Changed) */
-ZMK_DISPLAY_WIDGET_LISTENER(widget_info_panel_profile, struct zmk_endpoint_changed,
-                            profile_update_cb, profile_get_state);
+static void profile_changed_cb(struct zmk_ble_active_profile_changed ev) {
+    update_profile_ui();
+}
+
+ZMK_DISPLAY_WIDGET_LISTENER(widget_info_panel_profile, struct zmk_ble_active_profile_changed,
+                            profile_changed_cb, profile_get_state);
 ZMK_SUBSCRIPTION(widget_info_panel_profile, zmk_ble_active_profile_changed);
 
-/* 监听 2: 端点状态变更 (Endpoint Changed - 包含蓝牙连接/断开事件) */
+
+/* ==================== 2. 端点状态变更事件监听 ==================== */
+static struct zmk_endpoint_changed endpoint_get_state(const zmk_event_t *eh) {
+    const struct zmk_endpoint_changed *ev = as_zmk_endpoint_changed(eh);
+    if (ev) {
+        return *ev;
+    }
+    return (struct zmk_endpoint_changed){0};
+}
+
+static void endpoint_changed_cb(struct zmk_endpoint_changed ev) {
+    update_profile_ui();
+}
+
 ZMK_DISPLAY_WIDGET_LISTENER(widget_info_panel_endpoint, struct zmk_endpoint_changed,
-                            profile_update_cb, profile_get_state);
+                            endpoint_changed_cb, endpoint_get_state);
 ZMK_SUBSCRIPTION(widget_info_panel_endpoint, zmk_endpoint_changed);
+
 
 void zmk_widget_info_panel_endpoint_init() {
     widget_info_panel_endpoint_init();

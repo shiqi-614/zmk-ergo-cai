@@ -22,7 +22,8 @@ void zmk_widget_cat_status_init(struct zmk_widget_cat_status *widget, lv_obj_t *
     widget->state = CAT_STATE_RUNNING; // 默认状态
     
     /* 默认加载一张图片 */
-    lv_image_set_src(widget->obj, &running);
+    lv_image_set_src(widget->obj, &connecting);
+    LOG_INF("zmk_widget_cat_status_init done");
 }
 
 lv_obj_t *zmk_widget_cat_status_obj(struct zmk_widget_cat_status *widget) {
@@ -55,7 +56,7 @@ void zmk_widget_cat_status_set_state(struct zmk_widget_cat_status *widget, cat_s
     if (img_src != NULL && widget->obj != NULL) {
         lv_image_set_src(widget->obj, img_src);
     }
-    LOG_INF("zmk_widget_cat_status_init done");
+    LOG_INF("zmk_widget_cat_status_set_state done");
 }
 
 /* ========================================================================= */

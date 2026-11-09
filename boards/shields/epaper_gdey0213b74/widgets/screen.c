@@ -24,6 +24,14 @@ void ui_create(struct zmk_widget_screen *widget) {
         return;
     }
 
+    memset(&widget->state, 0, sizeof(widget->state));
+    widget->state.battery = 0;
+    widget->state.layer_index = 0;
+    widget->state.profile_index = 0;
+    widget->state.is_bluetooth_connected = false;
+    widget->state.is_split_connected = false;
+    widget->state.is_sleeping = false;
+
     lv_obj_set_style_bg_color(scr, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
 
@@ -66,6 +74,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     ui_create(widget);
 
     lv_obj_invalidate(widget->obj);
+    lv_refr_now(disp);
 
     LOG_INF("zmk_widget_screen_init Done");
     return 0;
