@@ -3,6 +3,9 @@
 #include <input/processors.dtsi>
 #include <dt-bindings/gpio/nordic-nrf-gpio.h>
 
+/* 用户 config 里用 #ifdef SHIELD_JOYSTICK 判断是否选了这个 shield */
+#define SHIELD_JOYSTICK
+
 
 / {
     zephyr,user {

@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/* 用户 config 里用 #ifdef SHIELD_EPAPER_GDEY0213B74 判断是否选了这个 shield */
+#define SHIELD_EPAPER_GDEY0213B74
+
 
 / {
 	chosen {
