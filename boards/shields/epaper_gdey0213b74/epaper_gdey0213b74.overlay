@@ -4,11 +4,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <dt-bindings/led/led.h>
+
 /* 用户 config 里用 #ifdef SHIELD_EPAPER_GDEY0213B74 判断是否选了这个 shield */
 #define SHIELD_EPAPER_GDEY0213B74
 
 
 / {
+	/* 状态灯显示当前层: 0xRRGGBB, 按 keymap 里层的顺序; 0 灭, 1 蓝, 2 绿, 3 红, 4 紫, 5 青, 6 橙, 7 白.
+	 * 指示灯用很低的亮度即可; 用户 config 里用 &layer_led { colors = <...>; }; 改 */
+	layer_led: layer_color_led {
+		compatible = "zmk,layer-color-led";
+		led-strip = <&epaper_led>;
+		colors = <0x000000 0x000020 0x002000 0x200000 0x100020 0x001818 0x200800 0x101010>;
+	};
+
 	chosen {
 		zephyr,display = &ssd16xx_waveshare_epaper_gdey0213b74;
 	};
@@ -62,6 +72,41 @@ epaper_spi: &spi2 {
         group1 {
             psels = <NRF_PSEL(SPIM_SCK, 0, 9)>,
                     <NRF_PSEL(SPIM_MOSI, 0, 10)>;
+            low-power-enable;
+        };
+    };
+};
+
+/* 模块上的状态灯 SK6805-EC20 (WS2812 时序): DIN 接一个单独 SPIM 的 MOSI, 只用 MOSI;
+ * 引脚由用户 config 覆盖 &epaper_led_default / &epaper_led_sleep */
+&spi3 {
+    status = "okay";
+    /delete-property/ cs-gpios;
+    pinctrl-0 = <&epaper_led_default>;
+    pinctrl-1 = <&epaper_led_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    epaper_led: ws2812@0 {
+        compatible = "worldsemi,ws2812-spi";
+        reg = <0>;
+        spi-max-frequency = <4000000>;
+        chain-length = <1>;
+        spi-one-frame = <0x70>;
+        spi-zero-frame = <0x40>;
+        color-mapping = <LED_COLOR_ID_GREEN LED_COLOR_ID_RED LED_COLOR_ID_BLUE>;
+    };
+};
+
+&pinctrl {
+    epaper_led_default: epaper_led_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 6)>;
+        };
+    };
+
+    epaper_led_sleep: epaper_led_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 6)>;
             low-power-enable;
         };
     };

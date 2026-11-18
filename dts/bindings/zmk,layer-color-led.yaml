@@ -1,0 +1,26 @@
+description: |
+  Shows the keymap's highest active layer as a colour on an LED strip: every LED of the strip
+  takes the colour that `colors` gives the layer. The LEDs are off for layers past the end of
+  the list, while the keyboard sleeps, and while it is idle (CONFIG_ZMK_LAYER_COLOR_LED_OFF_IDLE).
+  Only the half that runs the keymap knows the layer; on a split that is the central.
+
+    layer_led: layer_color_led {
+        compatible = "zmk,layer-color-led";
+        led-strip = <&status_led>;
+        colors = <0x000000 0x000020 0x002000>;  /* layer 0 off, 1 blue, 2 green */
+    };
+
+compatible: "zmk,layer-color-led"
+
+properties:
+  led-strip:
+    type: phandle
+    required: true
+    description: The LED strip that shows the layer, e.g. a worldsemi,ws2812-spi node.
+
+  colors:
+    type: array
+    required: true
+    description: |
+      The colour of each layer as 0xRRGGBB, by layer index in keymap order; 0x000000 is off.
+      An indicator needs a fraction of full brightness: about 0x20 per channel.

@@ -1,0 +1,1 @@
+target_sources_ifdef(CONFIG_ZMK_LAYER_COLOR_LED app PRIVATE src/layer_color_led.c)

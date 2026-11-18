@@ -50,3 +50,19 @@ module-str = ANALOG_INPUT
 source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
 
 endif #ANALOG_INPUT
+
+config ZMK_LAYER_COLOR_LED
+	bool "Show the highest active layer as a colour on an LED strip"
+	default y
+	depends on DT_HAS_ZMK_LAYER_COLOR_LED_ENABLED
+	depends on !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
+	select LED_STRIP
+	help
+	  Lights the led-strip of the zmk,layer-color-led node in the colour its
+	  colors property gives the highest active layer. Only the half that runs
+	  the keymap knows the layer, so a split's peripheral leaves it out.
+
+config ZMK_LAYER_COLOR_LED_OFF_IDLE
+	bool "Turn the layer colour LED off while the keyboard is idle"
+	default y
+	depends on ZMK_LAYER_COLOR_LED
