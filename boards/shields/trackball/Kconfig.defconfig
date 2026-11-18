@@ -1,0 +1,17 @@
+# The trackball module (ErgoCai.modules trackball/PMW3610-pogo): Zephyr's own PMW3610 driver on an SPIM, the
+# module's supply from a GPIO through a fixed regulator, the motion as ZMK pointing input.
+if SHIELD_TRACKBALL
+
+config ZMK_POINTING
+    default y
+
+config SPI
+    default y
+
+config INPUT
+    default y
+
+config REGULATOR
+    default y
+
+endif
