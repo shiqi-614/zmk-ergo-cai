@@ -9,7 +9,7 @@
 
 / {
     zephyr,user {
-        io-channels = <&adc 0>, <&adc 1>; 
+        io-channels = <&adc 1>, <&adc 2>; 
     };
 
     /* 2. 定义模拟输入节点 (X 轴与 Y 轴) */
@@ -23,7 +23,7 @@
 
         /* X 轴子节点 */
         joystick_x {
-            io-channels = <&adc 0>; 
+            io-channels = <&adc 1>; 
             mv-min-max = <1700>;     /* 注意：属性名是短横线 mv-min-max */
             mv-deadzone = <100>;
             evt-type = <2>;          /* INPUT_EV_REL (相对轴事件) */
@@ -35,7 +35,7 @@
 
         /* Y 轴子节点 */
         joystick_y {
-            io-channels = <&adc 1>; 
+            io-channels = <&adc 2>; 
             mv-min-max = <1700>;
             mv-deadzone = <100>;
             evt-type = <2>;          /* INPUT_EV_REL */
@@ -60,14 +60,15 @@
 
 };
 
+/* SAADC 通道 1、2: 通道 0 留给 ZMK 的电池分压驱动 (zmk,battery-voltage-divider 固定用通道 0) */
 /* 1. 配置 ADC 设备 (按需开启) */
 &adc {
     status = "okay";
     #address-cells = <1>;
     #size-cells = <0>;
 
-    adc_joystick_x: channel@0 {
-        reg = <0>;
+    adc_joystick_x: channel@1 {
+        reg = <1>;
         zephyr,gain = "ADC_GAIN_1_6";
         zephyr,reference = "ADC_REF_INTERNAL";
         zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
@@ -75,8 +76,8 @@
         zephyr,resolution = <12>;
     };
 
-    adc_joystick_y: channel@1 {
-        reg = <1>;
+    adc_joystick_y: channel@2 {
+        reg = <2>;
         zephyr,gain = "ADC_GAIN_1_6";
         zephyr,reference = "ADC_REF_INTERNAL";
         zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
