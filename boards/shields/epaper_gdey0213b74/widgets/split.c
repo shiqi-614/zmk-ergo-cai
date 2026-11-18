@@ -56,7 +56,7 @@ static void split_update_cb(struct split_status_state state) {
 
 /* 4. 注册监听器 */
 ZMK_DISPLAY_WIDGET_LISTENER(widget_info_panel_split, 
-                            struct zmk_split_peripheral_status_changed,
+                            struct split_status_state,
                             split_update_cb, 
                             split_get_state);
 ZMK_SUBSCRIPTION(widget_info_panel_split, zmk_split_peripheral_status_changed);

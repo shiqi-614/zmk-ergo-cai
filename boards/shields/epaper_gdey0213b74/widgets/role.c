@@ -64,7 +64,7 @@ static void role_update_cb(struct role_status_state state) {
 }
 
 /* 4. 注册 ZMK 监听器与订阅事件 */
-ZMK_DISPLAY_WIDGET_LISTENER(widget_info_panel_role, struct zmk_split_peripheral_status_changed,
+ZMK_DISPLAY_WIDGET_LISTENER(widget_info_panel_role, struct role_status_state,
                             role_update_cb, role_get_state);
 ZMK_SUBSCRIPTION(widget_info_panel_role, zmk_split_peripheral_status_changed);
 #endif

@@ -13,6 +13,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(epaper_screen, CONFIG_ZMK_LOG_LEVEL);
 
+/* BLE profile 和 endpoint 只在跑 keymap 的一半上有 (不分体, 或分体的 central); peripheral 上这个 widget 留着初始文字 */
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+
 extern int zmk_ble_active_profile_index(void);
 
 /* 统一的状态更新与刷新逻辑 */
@@ -93,3 +96,8 @@ void zmk_widget_info_panel_endpoint_init() {
 void zmk_widget_info_panel_profile_init() {
     widget_info_panel_profile_init();
 }
+#else
+void zmk_widget_info_panel_endpoint_init() {}
+
+void zmk_widget_info_panel_profile_init() {}
+#endif

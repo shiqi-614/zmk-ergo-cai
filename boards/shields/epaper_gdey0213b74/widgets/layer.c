@@ -6,6 +6,9 @@
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/keymap.h>
 
+/* 层只在跑 keymap 的一半上有 (不分体, 或分体的 central); peripheral 上这个 widget 留着初始文字 */
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+
 /* 1. Getter：直接返回 ZMK 原生事件结构体 */
 static struct zmk_layer_state_changed layer_get_state(const zmk_event_t *eh) {
     const struct zmk_layer_state_changed *ev = as_zmk_layer_state_changed(eh);
@@ -52,3 +55,6 @@ ZMK_SUBSCRIPTION(widget_info_panel_layer, zmk_layer_state_changed);
 void zmk_widget_info_panel_layer_init(void) {
     widget_info_panel_layer_init();
 }
+#else
+void zmk_widget_info_panel_layer_init(void) {}
+#endif
