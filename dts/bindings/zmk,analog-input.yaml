@@ -5,6 +5,9 @@ description: |
 
 compatible: "zmk,analog-input"
 
+# status, and zephyr,deferred-init for a mount that starts the joystick only when it finds one (pogo_detect)
+include: base.yaml
+
 properties:
   sampling-hz:
     type: int

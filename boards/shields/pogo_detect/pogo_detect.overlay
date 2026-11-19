@@ -1,0 +1,30 @@
+/*
+ * One firmware for the joystick mount (ErgoCai.modules joystick-mount-pogo) whichever module sits on it, the
+ * joystick or the trackball: build the half with both modules' shields and this one after them
+ * (... joystick trackball pogo_detect). Both modules' devices wait here (zephyr,deferred-init); at boot
+ * src/pogo_detect.c powers the module, asks for the PMW3610's product ID over the trackball's SPI, and starts the
+ * trackball, or else puts the SPI's pins to sleep (disconnected, for the ADC) and starts the joystick.
+ * The joystick's push switch is the trackball's MOTION line: a trackball gets the physical layout whose kscan is the
+ * matrix alone, which kbplacer writes into config/<half>.overlay under #ifdef SHIELD_POGO_DETECT.
+ */
+
+/* user config can test #ifdef SHIELD_POGO_DETECT */
+#define SHIELD_POGO_DETECT
+
+&joystick {
+    zephyr,deferred-init;
+};
+
+&trackball {
+    zephyr,deferred-init;
+};
+
+&trackball_spi {
+    zephyr,deferred-init;
+};
+
+/* on for the trackball only: pogo_detect.c turns it on itself to probe, the joystick switches it while sampling */
+&trackball_power {
+    zephyr,deferred-init;
+    /delete-property/ regulator-always-on;
+};

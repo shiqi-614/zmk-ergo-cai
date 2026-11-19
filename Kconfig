@@ -66,3 +66,10 @@ config ZMK_LAYER_COLOR_LED_OFF_IDLE
 	bool "Turn the layer colour LED off while the keyboard is idle"
 	default y
 	depends on ZMK_LAYER_COLOR_LED
+
+config ZMK_POGO_DETECT
+	bool "Start the joystick or the trackball module on the joystick mount, whichever sits on it"
+	depends on SPI && REGULATOR && PM_DEVICE
+	help
+	  With the pogo_detect shield after the joystick and trackball shields: at boot, probe the
+	  mount for a PMW3610 and start that module's devices, which the shield defers.

@@ -1,0 +1,7 @@
+# One firmware for the joystick mount, whichever module sits on it (src/pogo_detect.c).
+if SHIELD_POGO_DETECT
+
+config ZMK_POGO_DETECT
+    default y
+
+endif
