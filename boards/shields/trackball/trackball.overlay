@@ -7,8 +7,10 @@
  *   nRF52840 do (Zephyr's nRF SPIM has no half-duplex mode).
  * - The module's supply is a GPIO (the stick's, switched there only while sampling): a fixed regulator turns it
  *   on at boot and keeps it on; the sensor draws 0.6 mA when running (datasheet table 4), its LDO makes 1.8 V.
- * - The sensor sits a quarter turn round on the module board, its back to the board: the transform below swaps
- *   the axes; flip x or y in zmk-config (&trackball { invert-x; };) if the ball runs the wrong way.
+ * - The sensor sits a quarter turn round on the module board, its back to the board, and the module (and the
+ *   trackball on the keyboard board alike) goes on the keyboard turned half a turn, its pins by the thumb: the
+ *   transform below swaps the axes and inverts both; flip x or y in zmk-config (&trackball { invert-x; };) if the
+ *   ball runs the wrong way.
  */
 
 #include <dt-bindings/gpio/nordic-nrf-gpio.h>
@@ -33,12 +35,12 @@
     trackball_listener: trackball_listener {
         compatible = "zmk,input-listener";
         device = <&trackball>;
-        input-processors = <&zip_xy_transform INPUT_TRANSFORM_XY_SWAP>;
+        input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP | INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>;
 
         /* on layer 1 (the stick's push toggles it on the joystick module) the ball scrolls */
         scroller {
             layers = <1>;
-            input-processors = <&zip_xy_transform INPUT_TRANSFORM_XY_SWAP>, <&zip_xy_to_scroll_mapper>,
+            input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP | INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>, <&zip_xy_to_scroll_mapper>,
                                <&zip_scroll_scaler 1 16>;
         };
     };
