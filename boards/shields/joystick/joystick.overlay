@@ -30,7 +30,9 @@
             input-code = <0>;        /* INPUT_REL_X */
             scale-multiplier = <1>;
             scale-divisor = <70>;
-            /* invert;                  [> 方向反转标志 <] */
+            /* the module sits on the pogo mount turned half a turn (its pins at the pads by the thumb): both axes
+             * run the other way */
+            invert;
         };
 
         /* Y 轴子节点 */
@@ -42,6 +44,7 @@
             input-code = <1>;        /* INPUT_REL_Y */
             scale-multiplier = <1>;
             scale-divisor = <70>;
+            invert;                  /* turned half a turn, as x */
         };
     };
 
