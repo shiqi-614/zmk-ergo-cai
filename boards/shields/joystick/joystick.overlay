@@ -2,6 +2,7 @@
 #include <behaviors.dtsi>
 #include <input/processors.dtsi>
 #include <dt-bindings/gpio/nordic-nrf-gpio.h>
+#include <dt-bindings/zmk/pointer_config.h>
 
 /* 用户 config 里用 #ifdef SHIELD_JOYSTICK 判断是否选了这个 shield */
 #define SHIELD_JOYSTICK
@@ -49,15 +50,31 @@
     };
 
 
+    /* the stick's pointer settings: none by default (the axes' invert above turns the module half a turn); the
+     * &js_cfg key (ZMK Studio: "Joystick") flips x or y, swaps them or changes the speed, kept over power-off */
+    js_pointer: js_pointer {
+        compatible = "ergocai,input-processor-pointer-config";
+        #input-processor-cells = <0>;
+        settings-name = "joystick";
+    };
+
+    behaviors {
+        js_cfg: js_cfg {
+            compatible = "ergocai,behavior-pointer-config";
+            #binding-cells = <1>;
+            display-name = "Joystick";
+            processor = <&js_pointer>;
+        };
+    };
+
     joystick_listener {
         compatible = "zmk,input-listener";
         device = <&joystick>;
-
-        /* input-processors = <&zip_xy_scaler 1 1>; */
+        input-processors = <&js_pointer>;
 
         scroller {
             layers = <1>;
-            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 32>;
+            input-processors = <&js_pointer>, <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 32>;
         };
     };
 

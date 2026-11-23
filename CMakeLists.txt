@@ -1,2 +1,4 @@
 target_sources_ifdef(CONFIG_ZMK_LAYER_COLOR_LED app PRIVATE src/layer_color_led.c)
 target_sources_ifdef(CONFIG_ZMK_POGO_DETECT app PRIVATE src/pogo_detect.c)
+zephyr_include_directories(include)
+target_sources_ifdef(CONFIG_ZMK_POINTER_CONFIG app PRIVATE src/pointer_config.c)

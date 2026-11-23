@@ -9,12 +9,14 @@
  *   on at boot and keeps it on; the sensor draws 0.6 mA when running (datasheet table 4), its LDO makes 1.8 V.
  * - The sensor sits a quarter turn round on the module board, its back to the board, and the module (and the
  *   trackball on the keyboard board alike) goes on the keyboard turned half a turn, its pins by the thumb: the
- *   transform below swaps the axes and inverts both; flip x or y in zmk-config (&trackball { invert-x; };) if the
- *   ball runs the wrong way.
+ *   pointer settings below (tb_pointer) swap the axes and invert both by default. The &tb_cfg key (ZMK Studio:
+ *   "Trackball") flips x or y, swaps them or changes the speed while the keyboard runs, and the settings keep it:
+ *   the side-read trackball's sensor reads the ball's side, so it may need a flip or a swap of its own.
  */
 
 #include <dt-bindings/gpio/nordic-nrf-gpio.h>
 #include <dt-bindings/zmk/input_transform.h>
+#include <dt-bindings/zmk/pointer_config.h>
 #include <input/processors.dtsi>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
@@ -32,15 +34,33 @@
         regulator-always-on;
     };
 
+    tb_pointer: tb_pointer {
+        compatible = "ergocai,input-processor-pointer-config";
+        #input-processor-cells = <0>;
+        settings-name = "trackball";
+        swap-xy;
+        invert-x;
+        invert-y;
+    };
+
+    behaviors {
+        tb_cfg: tb_cfg {
+            compatible = "ergocai,behavior-pointer-config";
+            #binding-cells = <1>;
+            display-name = "Trackball";
+            processor = <&tb_pointer>;
+        };
+    };
+
     trackball_listener: trackball_listener {
         compatible = "zmk,input-listener";
         device = <&trackball>;
-        input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP | INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>;
+        input-processors = <&tb_pointer>;
 
         /* on layer 1 (the stick's push toggles it on the joystick module) the ball scrolls */
         scroller {
             layers = <1>;
-            input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP | INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>, <&zip_xy_to_scroll_mapper>,
+            input-processors = <&tb_pointer>, <&zip_xy_to_scroll_mapper>,
                                <&zip_scroll_scaler 1 16>;
         };
     };

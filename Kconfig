@@ -73,3 +73,11 @@ config ZMK_POGO_DETECT
 	help
 	  With the pogo_detect shield after the joystick and trackball shields: at boot, probe the
 	  mount for a PMW3610 and start that module's devices, which the shield defers.
+
+config ZMK_POINTER_CONFIG
+	bool "Pointer settings (swap, flip, speed) changed from keys and kept over power-off"
+	default y
+	depends on DT_HAS_ERGOCAI_INPUT_PROCESSOR_POINTER_CONFIG_ENABLED
+	help
+	  The ergocai,input-processor-pointer-config processors (the trackball's, the joystick's) and the
+	  ergocai,behavior-pointer-config keys that change them; ZMK Studio lists the keys by name.

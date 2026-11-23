@@ -1,0 +1,23 @@
+# The pointer settings of one device (the trackball, the joystick), changed while the keyboard runs by keys bound
+# to an ergocai,behavior-pointer-config behavior, and kept over power-off in the settings under
+# "pointer_cfg/<settings-name>". Put it first in the device's input listener (and in its overrides).
+description: Input processor with run-time x/y swap, inversion and speed, kept in the settings
+
+compatible: "ergocai,input-processor-pointer-config"
+
+include: ip_zero_param.yaml
+
+properties:
+  settings-name:
+    type: string
+    required: true
+    description: its key in the settings, e.g. trackball
+  swap-xy:
+    type: boolean
+    description: by default, x and y swapped
+  invert-x:
+    type: boolean
+    description: by default, x flipped (after the swap)
+  invert-y:
+    type: boolean
+    description: by default, y flipped (after the swap)

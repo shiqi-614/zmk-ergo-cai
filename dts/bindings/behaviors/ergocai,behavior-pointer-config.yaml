@@ -1,0 +1,14 @@
+# A key that changes one device's pointer settings (an ergocai,input-processor-pointer-config): its parameter is
+# one of dt-bindings/zmk/pointer_config.h's commands. With display-name, ZMK Studio lists it and offers the
+# commands by name.
+description: Changes a device's pointer settings (flip, swap, speed)
+
+compatible: "ergocai,behavior-pointer-config"
+
+include: one_param.yaml
+
+properties:
+  processor:
+    type: phandle
+    required: true
+    description: The device's ergocai,input-processor-pointer-config
