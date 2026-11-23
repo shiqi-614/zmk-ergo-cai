@@ -41,6 +41,9 @@
         swap-xy;
         invert-x;
         invert-y;
+        /* on layer 1 the ball scrolls (16 times slower); a key changes any layer's mode */
+        scroll-layers = <1>;
+        scroll-divisor = <16>;
     };
 
     behaviors {
@@ -56,13 +59,6 @@
         compatible = "zmk,input-listener";
         device = <&trackball>;
         input-processors = <&tb_pointer>;
-
-        /* on layer 1 (the stick's push toggles it on the joystick module) the ball scrolls */
-        scroller {
-            layers = <1>;
-            input-processors = <&tb_pointer>, <&zip_xy_to_scroll_mapper>,
-                               <&zip_scroll_scaler 1 16>;
-        };
     };
 };
 

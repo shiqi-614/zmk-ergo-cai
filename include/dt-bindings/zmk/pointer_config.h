@@ -11,3 +11,5 @@
 #define PTR_FASTER 3   /* one step faster (up to 4x) */
 #define PTR_SLOWER 4   /* one step slower (down to 1/4) */
 #define PTR_RESET 5    /* back to the defaults in the devicetree */
+#define PTR_MOVE_HERE 6   /* on the highest active layer, move the pointer */
+#define PTR_SCROLL_HERE 7 /* on the highest active layer, scroll */

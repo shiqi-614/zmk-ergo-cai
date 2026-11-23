@@ -21,3 +21,10 @@ properties:
   invert-y:
     type: boolean
     description: by default, y flipped (after the swap)
+  scroll-layers:
+    type: array
+    description: by default, the layers on which it scrolls instead of moving the pointer
+  scroll-divisor:
+    type: int
+    default: 1
+    description: scrolling this many times slower than the pointer

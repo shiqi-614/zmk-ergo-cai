@@ -56,6 +56,9 @@
         compatible = "ergocai,input-processor-pointer-config";
         #input-processor-cells = <0>;
         settings-name = "joystick";
+        /* on layer 1 (the stick's push toggles it) the stick scrolls, 32 times slower; a key changes any layer's */
+        scroll-layers = <1>;
+        scroll-divisor = <32>;
     };
 
     behaviors {
@@ -71,11 +74,6 @@
         compatible = "zmk,input-listener";
         device = <&joystick>;
         input-processors = <&js_pointer>;
-
-        scroller {
-            layers = <1>;
-            input-processors = <&js_pointer>, <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 32>;
-        };
     };
 
 };
